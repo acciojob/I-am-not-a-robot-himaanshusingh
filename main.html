@@ -2,17 +2,96 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>I'm not a robot</title>
-    <link rel="stylesheet" href="styles.css" />
+    <title>Not a Robot Verification</title>
   </head>
   <body>
     <main>
       <!-- solution start -->
-      
+      <h3 id="h" style="text-align: center; margin: 20px 0">
+        Please click on the identical tiles to verify that you are not a robot.
+      </h3>
+      <div id="image-container" class="flex"></div>
+      <div class="flex" style="margin-top: 10px; gap: 10px">
+        <button id="reset" class="btn disable-btn">Reset</button>
+        <button id="verify" class="btn disable-btn">Verify</button>
+      </div>
+      <p id="para"></p>
       <!-- solution end -->
     </main>
-    <script src="./script.js"></script>
+    <script>
+      const imgs = document.querySelectorAll("#image-container img");
+      const resetBtn = document.getElementById("reset");
+      const verifyBtn = document.getElementById("verify");
+      const para = document.getElementById("para");
+      const heading = document.getElementById("h");
+      const imageClasses = ["img1", "img2", "img3", "img4", "img5"];
+      let images = []; // holds 6 class names (5 unique + 1 duplicate, shuffled)
+      let selectedIndexes = []; // holds indexes of currently selected tiles (max 2)
+
+      function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      function init() {
+        const dupIndex = Math.floor(Math.random() * imageClasses.length);
+        const dupClass = imageClasses[dupIndex];
+        images = imageClasses.slice();
+        images.push(dupClass);
+        shuffle(images);
+        selectedIndexes = [];
+        const container = document.getElementById("image-container");
+        container.innerHTML = "";
+        heading.textContent = "Please click on the identical tiles to verify that you are not a robot.";
+        para.textContent = "";
+        resetBtn.classList.add("disable-btn");
+        verifyBtn.classList.add("disable-btn");
+        images.forEach((cls, idx) => {
+          const img = document.createElement("img");
+          img.classList.add(cls);
+          img.dataset.index = idx;
+          img.addEventListener("click", () => handleTileClick(idx));
+          container.appendChild(img);
+        });
+      }
+
+      function handleTileClick(idx) {
+        const tiles = document.querySelectorAll("#image-container img");
+        if (selectedIndexes.includes(idx) || selectedIndexes.length === 2)
+          return;
+        selectedIndexes.push(idx);
+        tiles[idx].classList.add("selected");
+        if (selectedIndexes.length >= 1) {
+          document.getElementById("reset").classList.remove("disable-btn");
+        }
+        if (selectedIndexes.length === 2) {
+          document.getElementById("verify").classList.remove("disable-btn");
+        }
+      }
+
+      resetBtn.addEventListener("click", () => {
+        selectedIndexes = [];
+        imgs.forEach((img) => img.classList.remove("selected"));
+        resetBtn.classList.add("disable-btn");
+        verifyBtn.classList.add("disable-btn");
+        para.textContent = "";
+        heading.textContent = "Please click on the identical tiles to verify that you are not a robot.";
+      });
+
+      verifyBtn.addEventListener("click", () => {
+        verifyBtn.classList.add("disable-btn");
+        if (selectedIndexes.length !== 2) return;
+        const [i1, i2] = selectedIndexes;
+        const class1 = images[i1];
+        const class2 = images[i2];
+        if (class1 === class2) para.textContent = "You are a human. Congratulations!";
+        else para.textContent = "We can't verify you as a human. You selected the non-identical tiles.";
+      });
+
+      init();
+    </script>
   </body>
 </html>
